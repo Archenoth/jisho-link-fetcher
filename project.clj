@@ -1,4 +1,4 @@
-(defproject jisho-link-fetcher "0.0.1"
+(defproject jisho-link-fetcher "0.0.2"
   :description "An org-file [[jisho:<word>][Word]] extractor"
   :url "https://github.com/Archenoth/jisho-link-fetcher"
   :license {:name "Eclipse Public License"
