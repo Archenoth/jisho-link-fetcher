@@ -1,10 +1,10 @@
 # jisho-link-fetcher
 
 In a nutshell, this project turns files like this:
-[Org Mode](doc/org.png)
+![Org Mode](doc/org.png)
 
 Into reviews like this:
-[Anki](doc/anki.png)
+![Anki](doc/anki.png)
 
 This project is primarily to help with the creation of Anki decks for
 [Pokemon Japanese School](https://github.com/Archenoth/Pokemon-Japanese-School).
