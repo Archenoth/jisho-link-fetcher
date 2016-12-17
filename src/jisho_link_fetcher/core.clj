@@ -18,7 +18,7 @@
             (filter (complement #(= "[]" %)))
             (apply str))
        #"\n")
-      (let [ruby (select "#primary div.exact_block div.japanese ruby *" test-doc-ruby)
+      (let [ruby (select "#primary div.exact_block div.japanese ruby *" doc)
             furiganad (str (first (text ruby)) "[" (second (text ruby)) "]")]
         ((partial str/replace-first full) (first (text ruby)) furiganad)))))
 
