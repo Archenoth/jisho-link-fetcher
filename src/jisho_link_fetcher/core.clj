@@ -3,7 +3,8 @@
   (:use jsoup.soup)
   (:require [clj-anki.core :as anki]
             [clojure.java.io :as io]
-            [clojure.data.csv :as csv]))
+            [clojure.data.csv :as csv]
+            [clojure.string :as str]))
 
 (defn jisho-definition
   "Grabs a definition if available for a Japanese word lookup"
@@ -12,6 +13,22 @@
   (let [doc (get! (str "http://jisho.org/search?utf8=%E2%9C%93&keyword=" word))]
     {:word (-> (select "div.exact_block .text" doc) text)
      :definition (-> (select ".meaning-meaning" doc) text first)}))
+
+(defn jisho-furigana
+  "Given a Jisho document, returns the Furigana'd version of the word,
+  with the furigana in square brackets after sets of Kanji."
+  [doc]
+  (let [full (first (text (select "div.exact_block .text" doc)))]
+    (if (empty? (select "div.exact_block div.japanese ruby *" doc))
+      (str/split
+       (->> (interleave (str/split (.html (select "div.exact_block .text" doc)) #"<[^>]+>")
+                        (map #(str "[" % "]") (text (select "div.exact_block .furigana span" doc))))
+            (filter (complement #(= "[]" %)))
+            (apply str))
+       #"\n")
+      (let [ruby (select "#primary div.exact_block div.japanese ruby *" test-doc-ruby)
+            furiganad (str (first (text ruby)) "[" (second (text ruby)) "]")]
+        ((partial str/replace-first full) (first (text ruby)) furiganad)))))
 
 (defn extract-jisho-links
   "Extracts all of the jisho: links from an org-file into a set."
