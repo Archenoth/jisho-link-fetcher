@@ -71,7 +71,7 @@
   (anki/map-seq-to-package!
    (map (fn [definition]
           {:question (:word definition)
-           :answers [(:definition definition)]
+           :answers [(str (:furigana definition) "<br />" (:definition definition))]
            :tags #{"jisho"}})
         (jisho-definitions-set org-file))
    out-file))
