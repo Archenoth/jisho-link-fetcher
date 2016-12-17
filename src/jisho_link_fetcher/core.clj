@@ -6,21 +6,33 @@
             [clojure.data.csv :as csv]
             [clojure.string :as str]))
 
+(defn non-ruby-jisho-furigana
+  "Given a full word and Jisho document with no Ruby annotations,
+  tries really hard to extract the furigiana version of the first word
+  on the page"
+  [full doc]
+  (let [split (str/split (.html (select "div.exact_block .text" doc)) #"\n")
+        split (str/split (first split) #"<[^>]+>")
+        re-han (re-seq #"\p{script=Han}" (first split))
+        furi (select ".exact_block div.clearfix:first-of-type .furigana span" doc)
+        furi (map #(str "[" % "]") (text furi))
+        is-split (= (count re-han) (count furi))]
+    (->> (interleave (if is-split re-han split) (concat furi (repeat "")))
+         (filter (complement #(= "[]" %)))
+         (apply str))))
+
 (defn jisho-furigana
   "Given a Jisho document, returns the Furigana'd version of the word,
   with the furigana in square brackets after sets of Kanji."
   [doc]
   (let [full (first (text (select "div.exact_block .text" doc)))]
-    (if (empty? (select "div.exact_block div.japanese ruby *" doc))
-      (str/split
-       (->> (interleave (str/split (.html (select "div.exact_block .text" doc)) #"<[^>]+>")
-                        (map #(str "[" % "]") (text (select "div.exact_block .furigana span" doc))))
-            (filter (complement #(= "[]" %)))
-            (apply str))
-       #"\n")
-      (let [ruby (select "#primary div.exact_block div.japanese ruby *" doc)
-            furiganad (str (first (text ruby)) "[" (second (text ruby)) "]")]
-        ((partial str/replace-first full) (first (text ruby)) furiganad)))))
+    (if (or (not full) (empty? (re-seq #"\p{script=Han}" full)))
+      full
+      (if (empty? (select "div.exact_block div.japanese ruby *" doc))
+        (non-ruby-jisho-furigana full doc)
+        (let [ruby (select "div.exact_block div.japanese ruby *" doc)
+              furiganad (str (first (text ruby)) "[" (second (text ruby)) "]")]
+          ((partial str/replace-first full) (first (text ruby)) furiganad))))))
 
 (defn jisho-definition
   "Grabs a definition if available for a Japanese word lookup"
