@@ -1,7 +1,8 @@
 (ns jisho-link-fetcher.core
   (:gen-class)
   (:use jsoup.soup)
-  (:require [clojure.java.io :as io]
+  (:require [clj-anki.core :as anki]
+            [clojure.java.io :as io]
             [clojure.data.csv :as csv]))
 
 (defn jisho-definition
@@ -29,8 +30,21 @@
   (loop [words (extract-jisho-links org-file)
          acc #{}]
     (if (empty? words)
-      acc
+      (filter #(not (empty? (:word %))) acc)
       (recur (rest words) (conj acc (jisho-definition (first words)))))))
+
+(defn write-jisho-definition-anki-package
+  "Given an org file and an Anki package location, creates a new .apkg
+  file that can be imported into Anki from the set of definitions from
+  the org file as fetched from Jisho."
+  [org-file out-file]
+  (anki/map-seq-to-package!
+   (map (fn [definition]
+          {:question (:word definition)
+           :answers [(:definition definition)]
+           :tags #{"jisho"}})
+        (jisho-definitions-set org-file))
+   out-file))
 
 (defn write-jisho-definition-txt-file
   "Grabs all the jisho: links in the passed-in org file and writes out
@@ -47,7 +61,7 @@
   "The not-so-idiomatic entrypoint"
   ([org-file out-file]
    (println "Reading" org-file "and writing to" out-file)
-   (write-jisho-definition-txt-file org-file out-file))
-  ([] (println "Usage: jisho-link-fetcher <Org File> <Output File>"))
+   (write-jisho-definition-anki-package org-file out-file))
+  ([] (println "Usage: jisho-link-fetcher <Org File> <Output apkg>"))
   ([x] (-main))
   ([x y & rest] (-main)))
