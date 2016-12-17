@@ -19,7 +19,7 @@ term:
 
 This library extracts all such links from a file, fetches the Kanji
 representations and the definitions of the words, and then writes them
-into a tab-delimited file that Anki can then import.
+into a .apkg file that Anki can then import.
 
 There is also a functions to pull the definition of a word right from
 Jisho.
@@ -29,7 +29,7 @@ To use this from the repository, you can dump a list of definitions
 like so:
 
 ```bash
-lein run /path/to/file/with/jisho/links anki.txt
+lein run /path/to/file/with/jisho/links jisho.apkg
 ```
 
 You can also make yourself a jar to use anywhere by running:
@@ -48,7 +48,9 @@ you can use the `jisho-definition` function in
 
 Which would return:
 
-    {:word "可愛い", :definition "cute; adorable; charming; lovely; pretty"}
+```clojure
+{:word "可愛い", :furigana "可愛[かわい]い", :definition "cute; adorable; charming; lovely; pretty"}
+```
 
 Or from English:
 ```clojure
@@ -57,7 +59,9 @@ Or from English:
 
 Which returns:
 
-    {:word "子犬", :definition "puppy"}
+```clojure
+{:word "子犬", :furigana "子[こ]犬[いぬ]", :definition "puppy"}
+```
 
 ## License
 

@@ -6,10 +6,11 @@ file. This change log follows the conventions of
 ## [Unreleased]
 ### Changed
 - Running from the command line now produces .apkg files for direct
-  Anki imports
+  Anki imports instead of .txt files
 
 ### Added
 - .apkg creation from org files
+- These .apkg files support Furigana
 
 ## 0.0.1 - 2016-12-05
 ### Added
