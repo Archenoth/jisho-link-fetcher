@@ -1,5 +1,11 @@
 # jisho-link-fetcher
 
+In a nutshell, this project turns files like this:
+[Org Mode](doc/org.png)
+
+Into reviews like this:
+[Anki](doc/anki.png)
+
 This project is primarily to help with the creation of Anki decks for
 [Pokemon Japanese School](https://github.com/Archenoth/Pokemon-Japanese-School).
 It is a Clojure library made specifically to extract links in the following
@@ -36,6 +42,12 @@ You can also make yourself a jar to use anywhere by running:
 
 ```bash
 lein uberjar
+```
+
+Which then can be run like so:
+
+```bash
+java -jar output.jar /path/to/file.org output.apkg
 ```
 
 To use this as a library to pull Jisho definitions for Japanese words,
