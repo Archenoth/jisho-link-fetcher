@@ -6,15 +6,6 @@
             [clojure.data.csv :as csv]
             [clojure.string :as str]))
 
-(defn jisho-definition
-  "Grabs a definition if available for a Japanese word lookup"
-  [word]
-  (Thread/sleep 1000) ;; Be courteous, limit at 1 per second
-  (let [doc (get! (str "http://jisho.org/search?utf8=%E2%9C%93&keyword=" word))]
-    {:word (-> (select "div.exact_block .text" doc) text)
-     :furigana (jisho-furigana doc)
-     :definition (-> (select ".meaning-meaning" doc) text first)}))
-
 (defn jisho-furigana
   "Given a Jisho document, returns the Furigana'd version of the word,
   with the furigana in square brackets after sets of Kanji."
@@ -30,6 +21,15 @@
       (let [ruby (select "#primary div.exact_block div.japanese ruby *" test-doc-ruby)
             furiganad (str (first (text ruby)) "[" (second (text ruby)) "]")]
         ((partial str/replace-first full) (first (text ruby)) furiganad)))))
+
+(defn jisho-definition
+  "Grabs a definition if available for a Japanese word lookup"
+  [word]
+  (Thread/sleep 1000) ;; Be courteous, limit at 1 per second
+  (let [doc (get! (str "http://jisho.org/search?utf8=%E2%9C%93&keyword=" word))]
+    {:word (-> (select "div.exact_block .text" doc) text)
+     :furigana (jisho-furigana doc)
+     :definition (-> (select ".meaning-meaning" doc) text first)}))
 
 (defn extract-jisho-links
   "Extracts all of the jisho: links from an org-file into a set."
