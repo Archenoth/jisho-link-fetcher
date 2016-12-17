@@ -1,48 +1,26 @@
 (ns jisho-link-fetcher.core
   (:gen-class)
   (:use jsoup.soup)
-  (:require [clj-anki.core :as anki]
+  (:require [jisho-link-fetcher.jisho-parser :as jp]
+            [clj-anki.core :as anki]
             [clojure.java.io :as io]
             [clojure.data.csv :as csv]
             [clojure.string :as str]))
 
-(defn non-ruby-jisho-furigana
-  "Given a Jisho document with no Ruby annotations, tries really hard
-  to extract the furigiana version of the first word on the page"
-  [doc]
-  (let [split (str/split (.html (select ".text" doc)) #"\n")
-        split (str/split (first split) #"<[^>]+>")
-        re-han (re-seq #"\p{script=Han}" (first split))
-        furi (select ".furigana span" doc)
-        furi (map #(str "[" % "]") (text furi))
-        is-split (= (count re-han) (count furi))]
-    (->> (interleave (if is-split re-han split) (concat furi (repeat "")))
-         (filter (complement #(= "[]" %)))
-         (apply str))))
-
-(defn jisho-furigana
-  "Given a Jisho document, returns the Furigana'd version of the word,
-  with the furigana in square brackets after sets of Kanji."
-  [doc]
-  (let [full (first (text (select ".text" doc)))]
-    (if (or (not full) (empty? (re-seq #"\p{script=Han}" full)))
-      full
-      (if (empty? (select "div.japanese ruby *" doc))
-        (non-ruby-jisho-furigana doc)
-        (let [ruby (select "div.japanese ruby *" doc)
-              furiganad (str (first (text ruby)) "[" (second (text ruby)) "]")]
-          ((partial str/replace-first full) (first (text ruby)) furiganad))))))
+(def first-definition-selector
+  "A selector that will return the first definition's container element"
+  "div.exact_block div.concept_light:first-of-type,div.concepts div.concept_light:first-of-type")
 
 (defn jisho-definition
   "Grabs a definition if available for a Japanese word lookup"
   [word]
   (Thread/sleep 1000) ;; Be courteous, limit at 1 per second
   (let [doc (get! (str "http://jisho.org/search?utf8=%E2%9C%93&keyword=" word))
-        doc (first (select "div.exact_block div.concept_light:first-of-type,div.concepts div.concept_light:first-of-type" doc))]
+        doc (first (select first-definition-selector doc))]
     (println (str "Fetching " word "..."))
     (when doc
       {:word (-> (select ".text" doc) text first)
-       :furigana (jisho-furigana doc)
+       :furigana (jp/jisho-furigana doc)
        :definition (-> (select ".meaning-meaning" doc) text first)})))
 
 (defn extract-jisho-links
