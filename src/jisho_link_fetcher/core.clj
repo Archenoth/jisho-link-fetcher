@@ -7,10 +7,9 @@
             [clojure.string :as str]))
 
 (defn non-ruby-jisho-furigana
-  "Given a full word and Jisho document with no Ruby annotations,
-  tries really hard to extract the furigiana version of the first word
-  on the page"
-  [full doc]
+  "Given a Jisho document with no Ruby annotations, tries really hard
+  to extract the furigiana version of the first word on the page"
+  [doc]
   (let [split (str/split (.html (select "div.exact_block .text" doc)) #"\n")
         split (str/split (first split) #"<[^>]+>")
         re-han (re-seq #"\p{script=Han}" (first split))
@@ -29,7 +28,7 @@
     (if (or (not full) (empty? (re-seq #"\p{script=Han}" full)))
       full
       (if (empty? (select "div.exact_block div.japanese ruby *" doc))
-        (non-ruby-jisho-furigana full doc)
+        (non-ruby-jisho-furigana doc)
         (let [ruby (select "div.exact_block div.japanese ruby *" doc)
               furiganad (str (first (text ruby)) "[" (second (text ruby)) "]")]
           ((partial str/replace-first full) (first (text ruby)) furiganad))))))
