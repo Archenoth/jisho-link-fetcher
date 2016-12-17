@@ -12,6 +12,7 @@
   (Thread/sleep 1000) ;; Be courteous, limit at 1 per second
   (let [doc (get! (str "http://jisho.org/search?utf8=%E2%9C%93&keyword=" word))]
     {:word (-> (select "div.exact_block .text" doc) text)
+     :furigana (jisho-furigana doc)
      :definition (-> (select ".meaning-meaning" doc) text first)}))
 
 (defn jisho-furigana
